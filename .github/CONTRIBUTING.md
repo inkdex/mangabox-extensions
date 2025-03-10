@@ -71,11 +71,11 @@ Assist by answering questions from other community members. Questions can be ask
 
 ### Validating Bug Reports
 
-Help ensure bugs can be addressed effectively by attempting to replicate reported issues and confirming their existence.
+Help ensure bugs can be addressed effectively by attempting to replicate reported issues and confirming their existence. Bug reports can be made in our [Discord server][discord-server] or in the [issue tracker][issue-tracker-bugs].
 
 ### Contributing to Enhancement Suggestions
 
-Enhancement suggestions often need feedback and refinement. Contribute by reviewing and discussing these suggestions, offering your perspective, and proposing improvements. Your input helps shape the future of the project.
+Enhancement suggestions often need feedback and refinement. Contribute by reviewing and discussing these suggestions, offering your perspective, and proposing improvements. Enhancement suggestions can be made in our [Discord server][discord-server] or in the [issue tracker][issue-tracker-enhancements]. Your input helps shape the future of the project.
 
 [code-of-conduct]: https://github.com/paperback-community/mangabox-extensions?tab=coc-ov-file#readme
 [template-repository]: https://github.com/paperback-community/template-extensions
@@ -84,4 +84,6 @@ Enhancement suggestions often need feedback and refinement. Contribute by review
 [package.json]: https://github.com/paperback-community/mangabox-extensions/blob/0.9/stable/package.json
 [node.js]: https://nodejs.org
 [discord-server]: https://discord.gg/paperback-community
-[q-a-discussions]: https://github.com/paperback-community/mangabox-extensions/discussions/categories/q-a
+[q-a-discussions]: https://github.com/paperback-community/extensions/discussions/categories/q-a
+[issue-tracker-bugs]: https://github.com/paperback-community/extensions/issues?q=is%3Aissue+is%3Aopen+label%3Aunconfirmed-bug+label%3Abug
+[issue-tracker-enhancements]: https://github.com/paperback-community/extensions/issues?q=label%3Aenhancement
