@@ -20,8 +20,8 @@
     "devDependencies": {
         "@eslint/js": "^9.22.0",
         "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
-        "@paperback/toolchain": "^1.0.0-alpha.39",
-        "@paperback/types": "^1.0.0-alpha.39",
+        "@paperback/toolchain": "^1.0.0-alpha.41",
+        "@paperback/types": "^1.0.0-alpha.41",
         "@types/eslint": "^9.6.1",
         "eslint": "^9.22.0",
         "husky": "^9.1.7",
