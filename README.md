@@ -4,7 +4,11 @@ Paperback extensions for websites which use the generic MangaBox theme.
 
 ## Available Extensions
 
-None at this moment.
+- [MangaBatCOM](https://www.mangabats.com)
+- [MangaKakalotGG](https://www.mangakakalot.gg)
+- [MangaNatoGG](https://www.manganato.gg)
+- [NatoMangaCOM](https://www.natomanga.com)
+- [NatoMangaNET](https://www.nelomanga.net)
 
 ## Installation
 

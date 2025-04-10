@@ -23,6 +23,7 @@
         "@paperback/toolchain": "^1.0.0-alpha.46",
         "@paperback/types": "^1.0.0-alpha.46",
         "@types/eslint": "^9.6.1",
+        "cheerio": "^1.0.0",
         "eslint": "^9.23.0",
         "husky": "^9.1.7",
         "nodemon": "^3.1.9",
