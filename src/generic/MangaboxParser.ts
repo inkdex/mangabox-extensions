@@ -17,36 +17,65 @@ import { Element } from "domhandler"; // Import Element from domhandler
 import { MangaboxGeneric } from "./Mangabox";
 
 export class MangaboxParser {
+    private async getImageServerIndex(): Promise<number> {
+        const server = (await Application.getState("image_server")) as
+            | string[]
+            | undefined;
+        return parseInt(server?.[0]?.replace("server", "") ?? "1") - 1;
+    }
+
+    private fixImageUrl(url: string, source: MangaboxGeneric): string {
+        if (!url || url.trim() === "") return "";
+        const trimmedUrl = url.trim();
+        if (trimmedUrl.startsWith("//")) {
+            return "https:" + trimmedUrl;
+        }
+        if (trimmedUrl.startsWith("/")) {
+            return source.domain + trimmedUrl;
+        }
+        return trimmedUrl;
+    }
+
     async parseMangaDetails(
         $: CheerioAPI,
         mangaId: string,
         source: MangaboxGeneric,
     ): Promise<SourceManga> {
-        const context = "div.main-wrapper";
-
-        const title = $("img", context).attr("alt")?.trim() ?? "";
+        const title =
+            $(".manga-info-text h1, .manga-info-top h1")
+                .first()
+                .text()
+                .trim() ||
+            $("h1").first().text().trim() ||
+            mangaId;
 
         const image = encodeURI(
-            (await this.getImageSrc($("img", context), source)) ?? "",
+            (await this.getImageSrc(
+                $(".manga-info-pic img, .manga-info-top img").first(),
+                source,
+            )) ?? "",
         );
 
-        const secondaryTitleBox = $(".story-alternative", context)
-            .first()
-            .text()
-            .trim();
+        const secondaryTitleBox = $(".story-alternative").first().text().trim();
         const secondaryTitles: string[] = secondaryTitleBox
             .replace(/^Alternative\s*:\s*/i, "")
             .split(";")
             .map((title) => title.trim())
             .filter((title) => title.length > 0);
 
-        const authors = $('li:contains("Author(s)") a')
-            .map((_, el) => $(el).text().trim())
-            .get()
-            .join(", ");
+        let authors = "Unknown";
+        $(".manga-info-text li").each((_i, el) => {
+            const text = $(el).text();
+            if (text.includes("Author(s)")) {
+                authors = text
+                    .replace("Author(s) :", "")
+                    .replace("Author(s):", "")
+                    .trim();
+            }
+        });
 
         const synopsis: string = Application.decodeHTMLEntities(
-            $("#contentBox", context).first().text().trim(),
+            $("#contentBox").text().trim() || "",
         );
 
         const shareUrl: string = `${source.domain}/manga/${mangaId}`;
@@ -57,28 +86,25 @@ export class MangaboxParser {
                 10) *
             2;
 
-        const parsedStatus: string = $("li:contains(Status)", context)
-            .text()
-            .trim()
-            .toUpperCase();
-
-        let status: string;
-        if (parsedStatus.includes("COMPLETED")) {
-            status = "Completed";
-        } else {
-            status = "Ongoing";
-        }
+        let status: string = "Ongoing";
+        $(".manga-info-text li").each((_i, el) => {
+            const text = $(el).text().trim();
+            if (text.includes("Status")) {
+                if (text.toLowerCase().includes("completed")) {
+                    status = "Completed";
+                }
+            }
+        });
 
         let contentRating = source.defaultContentRating;
 
         const genres: Tag[] = [];
-        for (const obj of $("a", $("li.genres", context)).toArray()) {
+        for (const obj of $(".manga-info-text li.genres a").toArray()) {
             const title = $(obj).text().trim();
-            const id = this.idCleaner($(obj).attr("href") ?? "");
+            const id = title.toLowerCase().replace(/\s+/g, "-");
 
             if (!title || !id) continue;
 
-            // If item contains NSFW, set item to adult
             if (["adult", "mature", "smut"].includes(title.toLowerCase())) {
                 contentRating = ContentRating.ADULT;
             }
@@ -113,34 +139,31 @@ export class MangaboxParser {
         source: MangaboxGeneric,
     ): Chapter[] {
         const chapters: Chapter[] = [];
-        const nodeArray = $(".row", ".chapter-list").toArray();
+        const nodeArray = $(
+            ".chapter-list .row, .row-content-chapter li",
+        ).toArray();
         let nodesProcessed = 0;
 
-        // For each available chapter..
         for (const obj of nodeArray) {
             const sortingIndex = nodeArray.length - nodesProcessed++;
-            const id = this.idCleaner($("a", obj).first().attr("href") ?? "");
+            const link = $("a", obj).first().attr("href");
+            if (!link) continue;
+
+            const chapterIdMatch = link.match(/\/chapter-([^/?]+)/);
+            const id = chapterIdMatch?.[1] ?? `${nodesProcessed}`;
 
             const chapName = $("a", obj).first().text().trim() ?? "";
-            const chapNumRegex = id.match(
-                /(?:chapter|ch.*?)(\d+\.?\d?(?:[-_]\d+)?)|(\d+\.?\d?(?:[-_]\d+)?)$/,
-            );
-            let chapNum: string | number =
-                chapNumRegex && chapNumRegex[1]
-                    ? chapNumRegex[1].replace(/[-_]/gm, ".")
-                    : (chapNumRegex?.[2] ?? "0");
 
-            // make sure the chapter number is a number and not NaN
-            chapNum = parseFloat(chapNum) ?? 0;
+            const chapterMatch = id.match(/^(\d+(?:\.\d+)?)/);
+            const chapNum: string | number = chapterMatch?.[1]
+                ? parseFloat(chapterMatch[1])
+                : nodesProcessed;
 
             const mangaTime = this.parseDate(
                 $("span", obj).last().attr("title") ?? "",
             );
 
             if (!id || typeof id === "undefined" || id === "#") {
-                console.log(
-                    `Could not parse out ID when getting chapters for mangaId:${sourceManga.mangaId} parsedId: ${id}`,
-                );
                 continue;
             }
 
@@ -165,15 +188,65 @@ export class MangaboxParser {
     ): Promise<ChapterDetails> {
         const pages: string[] = [];
 
-        for (const obj of $("img", "div.container-chapter-reader").toArray()) {
-            const page = await this.getImageSrc($(obj), source);
-            if (!page) {
-                console.log(
-                    `Could not parse pages for mangaId:${chapter.sourceManga.mangaId} chapterId:${chapter.chapterId}`,
-                );
-                continue;
+        const imageServerIndex = await this.getImageServerIndex();
+
+        let cdns: string[] = [];
+        $("script").each((_i, scriptElement) => {
+            const scriptContent = $(scriptElement).html() || "";
+            const cdnsMatch = scriptContent.match(
+                /var\s+cdns\s*=\s*\[(.*?)\];/s,
+            );
+            if (cdnsMatch && cdnsMatch[1]) {
+                try {
+                    const cdnString = `[${cdnsMatch[1].replace(/'/g, '"')}]`;
+                    const parsed = JSON.parse(cdnString) as unknown;
+                    if (
+                        Array.isArray(parsed) &&
+                        parsed.every((p) => typeof p === "string")
+                    ) {
+                        cdns = parsed;
+                    }
+                } catch (e) {
+                    console.error(
+                        "[MangaboxParser] Failed to parse CDN list:",
+                        e,
+                    );
+                }
             }
-            pages.push(encodeURI(page));
+        });
+
+        for (const obj of $("div.container-chapter-reader img").toArray()) {
+            const $img = $(obj);
+            if ($img.closest(".ads-contain").length > 0) continue;
+
+            let imgUrl = await this.getImageSrc($img, source);
+
+            if (!imgUrl || imgUrl.trim() === "") continue;
+            imgUrl = imgUrl.trim();
+
+            if (
+                cdns.length > 0 &&
+                imageServerIndex >= 0 &&
+                imageServerIndex < cdns.length
+            ) {
+                const targetCdn = cdns[imageServerIndex];
+                if (targetCdn) {
+                    for (const cdnUrl of cdns) {
+                        if (imgUrl.includes(cdnUrl)) {
+                            imgUrl = imgUrl.replace(cdnUrl, targetCdn);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            pages.push(encodeURI(imgUrl));
+        }
+
+        if (pages.length === 0) {
+            throw new Error(
+                `No images found for chapter ${chapter.chapterId}.`,
+            );
         }
 
         return {
@@ -190,13 +263,17 @@ export class MangaboxParser {
     ): Promise<DiscoverSectionItem[]> {
         const items: DiscoverSectionItem[] = [];
 
-        for (const obj of $("div.list-truyen-item-wrap").toArray()) {
+        for (const obj of $(
+            "div.comic-list div.list-comic-item-wrap",
+        ).toArray()) {
             const image = encodeURI(
                 (await this.getImageSrc($("img", obj), source)) ?? "",
             );
-            const title = $("img", obj).attr("alt")?.trim() ?? "";
+            const title = $("h3 a", obj).first().text().trim();
 
-            const id = this.idCleaner($("a", obj).attr("href") ?? "");
+            const link = $("a.list-story-item", obj).attr("href");
+            if (!link) continue;
+            const id = this.idCleaner(link);
 
             const subtitle = $("a.list-story-item-wrap-chapter", obj)
                 .first()
@@ -273,15 +350,17 @@ export class MangaboxParser {
     ): Promise<SearchResultItem[]> {
         const results: SearchResultItem[] = [];
 
-        // Title Search
         if (query.title) {
-            for (const obj of $("div.story_item").toArray()) {
+            for (const obj of $(".panel_story_list .story_item").toArray()) {
                 const image = encodeURI(
                     (await this.getImageSrc($("img", obj), source)) ?? "",
                 );
                 const title = $(".story_name", obj).text().trim();
 
-                const id = this.idCleaner($("a", obj).attr("href") ?? "");
+                const link = $("a", obj).attr("href");
+                if (!link) continue;
+                const id = this.idCleaner(link);
+
                 const subtitle = $(".story_chapter", obj).first().text().trim();
 
                 if (!id || !title) {
@@ -296,16 +375,18 @@ export class MangaboxParser {
                 });
             }
             return results;
-
-            // Genre Search
         } else {
-            for (const obj of $("div.list-truyen-item-wrap").toArray()) {
+            for (const obj of $(
+                "div.comic-list div.list-comic-item-wrap",
+            ).toArray()) {
                 const image = encodeURI(
                     (await this.getImageSrc($("img", obj), source)) ?? "",
                 );
-                const title = $("img", obj).attr("alt")?.trim() ?? "";
+                const title = $("h3 a", obj).first().text().trim();
 
-                const id = this.idCleaner($("a", obj).attr("href") ?? "");
+                const link = $("a.list-story-item", obj).attr("href");
+                if (!link) continue;
+                const id = this.idCleaner(link);
 
                 const subtitle = $("a.list-story-item-wrap-chapter", obj)
                     .first()
@@ -347,7 +428,6 @@ export class MangaboxParser {
 
             if (val == null || val.trim() === "") continue;
 
-            // If it's srcset, extract the first URL
             if (attr === "srcset") {
                 image = val.split(",")[0]?.trim().split(" ")[0] ?? "";
             } else {
@@ -363,10 +443,9 @@ export class MangaboxParser {
 
         image = image?.trim().replace(/(\s{2,})/gi, "");
 
-        image = image?.replace(/http:\/\/\//g, "http://"); // only changes urls with http protocol
+        image = image?.replace(/http:\/\/\//g, "http://");
         image = image?.replace(/http:\/\//g, "https://");
-        // Malforumed url fix (Turns https:///example.com into https://example.com (or the http:// equivalent))
-        image = image?.replace(/https:\/\/\//g, "https://"); // only changes urls with https protocol
+        image = image?.replace(/https:\/\/\//g, "https://");
 
         return decodeURI(Application.decodeHTMLEntities(image ?? ""));
     }
@@ -414,12 +493,20 @@ export class MangaboxParser {
     }
 
     isLastPage = ($: CheerioAPI): boolean => {
-        const currentPage = $(".page-select, .page_select").text();
-        let totalPages = $(".page-last, .page_last").text();
+        const currentPageText = $(".group_page a.page_select").text().trim();
+        if (!currentPageText) {
+            const nextPageExists = $(`.group_page a[href*="page="]`).length > 0;
+            return !nextPageExists;
+        }
 
-        if (currentPage) {
-            totalPages = (/(\d+)/g.exec(totalPages) ?? [""])[0];
-            return +totalPages == +currentPage;
+        const currentPageNum = parseInt(currentPageText) || 1;
+
+        const lastPageLink = $(".group_page a.page_last").text();
+        const lastPageMatch = lastPageLink.match(/Last\((\d+)\)/);
+
+        if (lastPageMatch) {
+            const lastPage = parseInt(lastPageMatch[1] ?? "1");
+            return currentPageNum >= lastPage;
         }
 
         return true;

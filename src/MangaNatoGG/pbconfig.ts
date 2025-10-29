@@ -20,5 +20,8 @@ export default {
             name: "Netsky",
             github: "https://github.com/TheNetsky",
         },
+        {
+            name: "Saw_6",
+        },
     ],
 } satisfies SourceInfo;
