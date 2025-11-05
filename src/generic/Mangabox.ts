@@ -16,6 +16,7 @@ import {
     MangaProviding,
     PagedResults,
     PaperbackInterceptor,
+    Request,
     Response,
     SearchFilter,
     SearchQuery,
@@ -23,7 +24,6 @@ import {
     SearchResultsProviding,
     SourceManga,
     TagSection,
-    URL,
 } from "@paperback/types";
 import * as cheerio from "cheerio";
 import { MangaboxInterceptor } from "./MangaboxInterceptor";
@@ -40,7 +40,6 @@ export interface GenericParams {
 
 type Metadata = {
     page?: number;
-    completed?: boolean;
 };
 
 export abstract class MangaboxGeneric
@@ -52,33 +51,14 @@ export abstract class MangaboxGeneric
         DiscoverSectionProviding,
         CloudflareBypassRequestProviding
 {
-    /**
-     * The Madara URL of the website. Eg. https://webtoon.xyz
-     */
     readonly domain: string;
-
-    /**
-     * The readable name of the website. Eg. Toonily
-     */
     readonly name: string;
-
-    /**
-     * The default content rating. Eg. Hiperdex = Adult
-     */
     readonly defaultContentRating: ContentRating;
-
-    /**
-     * The language code the source's content is served in in string form.
-     */
     readonly language: string;
 
     parser: MangaboxParser;
-
     requestManager: PaperbackInterceptor;
 
-    /**
-     *
-     */
     constructor(params: GenericParams) {
         this.name = params.name;
         this.domain = params.domain;
@@ -90,10 +70,9 @@ export abstract class MangaboxGeneric
             params.requestManager ?? new MangaboxInterceptor("main", this);
     }
 
-    // Ratelimit: Wait 2 sec after 5 requests
     globalRateLimiter = new BasicRateLimiter("ratelimiter", {
-        numberOfRequests: 5,
-        bufferInterval: 2,
+        numberOfRequests: 4,
+        bufferInterval: 1,
         ignoreImages: true,
     });
 
@@ -126,7 +105,6 @@ export abstract class MangaboxGeneric
         await this.checkResponseError(response);
 
         const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
-
         return this.parser.parseChapterList($, sourceManga, this);
     }
 
@@ -135,36 +113,33 @@ export abstract class MangaboxGeneric
         const chapterId = chapter.chapterId;
 
         const [response, buffer] = await Application.scheduleRequest({
-            url: `${this.domain}/manga/${mangaId}/${chapterId}`,
+            url: `${this.domain}/manga/${mangaId}/chapter-${chapterId}`,
             method: "GET",
         });
         await this.checkResponseError(response);
 
         const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
-
         return this.parser.parseChapterDetails($, chapter, this);
     }
 
     async getDiscoverSections(): Promise<DiscoverSection[]> {
         return [
             {
-                id: "new_titles",
-                title: "New Titles",
-                type: DiscoverSectionType.featured,
-            },
-            {
-                id: "latest_updates",
+                id: "4",
                 title: "Latest Updates",
+                subtitle: "Recently updated chapters",
+                type: DiscoverSectionType.prominentCarousel,
+            },
+            {
+                id: "1",
+                title: "New Titles",
+                subtitle: "Recently added manga",
                 type: DiscoverSectionType.simpleCarousel,
             },
             {
-                id: "most_popular",
+                id: "7",
                 title: "Most Popular",
-                type: DiscoverSectionType.simpleCarousel,
-            },
-            {
-                id: "completed_titles",
-                title: "Completed Titles",
+                subtitle: "Most viewed manga",
                 type: DiscoverSectionType.simpleCarousel,
             },
         ];
@@ -174,35 +149,15 @@ export abstract class MangaboxGeneric
         section: DiscoverSection,
         metadata: Metadata | undefined,
     ): Promise<PagedResults<DiscoverSectionItem>> {
-        let param = "";
         const page = metadata?.page ?? 1;
 
-        switch (section.id) {
-            case "new_titles":
-                param = "new-manga";
-                break;
-            case "latest_updates":
-                param = "latest-manga";
-                break;
-            case "most_popular":
-                param = "hot-manga";
-                break;
-            case "completed_titles":
-                param = "completed-manga";
-                break;
-
-            default:
-                throw new Error("Invalid sectionId provided!");
-        }
-
         const [response, buffer] = await Application.scheduleRequest({
-            url: `${this.domain}/manga-list/${param}?page=${page}`,
+            url: `${this.domain}/genre/all?filter=${section.id}&page=${page}`,
             method: "GET",
         });
         await this.checkResponseError(response);
 
         const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
-
         const items = await this.parser.parseDiscoverSections($, section, this);
 
         metadata = !this.parser.isLastPage($) ? { page: page + 1 } : undefined;
@@ -221,7 +176,6 @@ export abstract class MangaboxGeneric
         await this.checkResponseError(response);
 
         const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
-
         const tagSections = await this.parser.parseSearchTags($);
         const genreTags = tagSections.find(
             (x) => x.id === "genres",
@@ -256,14 +210,13 @@ export abstract class MangaboxGeneric
             page,
             query,
         );
-
         await this.checkResponseError(response);
 
         const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
-
         const results = await this.parser.parseSearchResults($, this, query);
 
         metadata = !this.parser.isLastPage($) ? { page: page + 1 } : undefined;
+
         return {
             items: results,
             metadata: metadata,
@@ -271,77 +224,87 @@ export abstract class MangaboxGeneric
     }
 
     async saveCloudflareBypassCookies(cookies: Cookie[]): Promise<void> {
-        // Clear all the cookies
-        for (const cookie of cookies) {
+        const existingCookies = [...this.cookieStorageInterceptor.cookies];
+        for (const cookie of existingCookies) {
             this.cookieStorageInterceptor.deleteCookie(cookie);
         }
 
-        // Set all the cookies
         for (const cookie of cookies) {
-            this.cookieStorageInterceptor.setCookie(cookie);
+            if (!cookie.expires || cookie.expires.getTime() > Date.now()) {
+                this.cookieStorageInterceptor.setCookie(cookie);
+            }
         }
     }
 
-    // Utility
+    async getCloudflareBypassRequest(): Promise<Request> {
+        return {
+            url: this.domain,
+            method: "GET",
+            headers: {
+                referer: this.domain,
+                origin: this.domain,
+            },
+        };
+    }
+
     constructSearchRequest(page: number, query: SearchQuery) {
-        const urlBuilder = new URL(this.domain);
+        let url = "";
 
         const genreFilters = Object.keys(
-            query.filters.find((x) => x.id === "genres")?.value ?? {},
+            query.filters?.find((x) => x.id === "genres")?.value ?? {},
         );
 
         if (query.title) {
-            urlBuilder.addPathComponent("search");
-            urlBuilder.addPathComponent("story");
-            urlBuilder.addPathComponent(
-                encodeURIComponent(this.sanitizeQuery(query?.title ?? "")),
+            const searchQuery = this.sanitizeQuery(query.title).replace(
+                /\s+/g,
+                "_",
             );
-            urlBuilder.setQueryItem("page", page.toString());
+            url = `${this.domain}/search/story/${searchQuery}?page=${page}`;
         } else if (genreFilters.length) {
-            urlBuilder.addPathComponent("genre");
-            urlBuilder.addPathComponent(genreFilters[0] ?? "");
-            urlBuilder.setQueryItem("page", page.toString());
+            url = `${this.domain}/genre/${genreFilters[0]}?page=${page}`;
         }
 
         return Application.scheduleRequest({
-            url: urlBuilder.toString(),
+            url: url,
             method: "GET",
         });
     }
 
     sanitizeQuery(query: string): string {
         return query
-            .replace(/'[^ ]*/g, "") // Remove apostrophes and the following characters up to a space
-            .replace(/\.+/g, "") // Remove all periods
-            .replace(/["']/g, "") // Remove quotes
+            .replace(/'[^ ]*/g, "")
+            .replace(/\.+/g, "")
+            .replace(/["']/g, "")
             .trim();
     }
 
     async checkResponseError(response: Response): Promise<void> {
         const status = response.status;
+
+        console.log("Response status:", status);
+        console.log("Current cookies:", this.cookieStorageInterceptor.cookies);
+
         switch (status) {
             case 403:
             case 503:
+                console.log(
+                    `Cloudflare protection detected. Status: ${status}`,
+                );
                 throw new CloudflareError(
                     {
                         url: response.url,
                         method: "GET",
                         headers: {
                             referer: `${this.domain}/`,
-                            origin: `${this.domain}/`,
-                            "user-agent":
-                                await Application.getDefaultUserAgent(),
+                            origin: this.domain,
                         },
                     },
-                    "Cloudflare detected!\nPlease do the Cloudflare bypass to continue!",
+                    "Cloudflare bypass required, please complete the challenge.",
                 );
             case 404:
-                throw new Error(
-                    `The requested page ${response.url} was not found!`,
-                );
-
+                throw new Error(`Content not found: ${response.url}`);
             case 429:
-                throw new Error(`Too many requests for ${response.url}!`);
+                throw new Error(`Too many requests for ${response.url}`);
         }
     }
 }
