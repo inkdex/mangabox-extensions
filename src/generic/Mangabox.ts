@@ -155,7 +155,7 @@ export abstract class MangaboxGeneric
             {
                 id: "latest_updates",
                 title: "Latest Updates",
-                type: DiscoverSectionType.simpleCarousel,
+                type: DiscoverSectionType.chapterUpdates,
             },
             {
                 id: "most_popular",
