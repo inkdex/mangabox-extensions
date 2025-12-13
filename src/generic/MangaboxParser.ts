@@ -190,7 +190,7 @@ export class MangaboxParser {
     ): Promise<DiscoverSectionItem[]> {
         const items: DiscoverSectionItem[] = [];
 
-        for (const obj of $("div.list-truyen-item-wrap").toArray()) {
+        for (const obj of $("div.list-comic-item-wrap").toArray()) {
             const image = encodeURI(
                 (await this.getImageSrc($("img", obj), source)) ?? "",
             );
@@ -215,6 +215,17 @@ export class MangaboxParser {
                         title: Application.decodeHTMLEntities(title),
                         supertitle: Application.decodeHTMLEntities(subtitle),
                         type: "featuredCarouselItem",
+                    });
+                    break;
+
+                case DiscoverSectionType.chapterUpdates:
+                    items.push({
+                        mangaId: id,
+                        chapterId: "",
+                        imageUrl: image,
+                        title: Application.decodeHTMLEntities(title),
+                        subtitle: Application.decodeHTMLEntities(subtitle),
+                        type: "chapterUpdatesCarouselItem",
                     });
                     break;
 
@@ -299,7 +310,7 @@ export class MangaboxParser {
 
             // Genre Search
         } else {
-            for (const obj of $("div.list-truyen-item-wrap").toArray()) {
+            for (const obj of $("div.list-comic-item-wrap").toArray()) {
                 const image = encodeURI(
                     (await this.getImageSrc($("img", obj), source)) ?? "",
                 );
