@@ -21,9 +21,9 @@
     "@paperback/types": "^1.0.0-alpha.57",
     "cheerio": "^1.1.2",
     "husky": "^9.1.7",
-    "oxfmt": "^0.20.0",
-    "oxlint": "^1.35.0",
-    "oxlint-tsgolint": "^0.10.0",
+    "oxfmt": "^0.22.0",
+    "oxlint": "^1.37.0",
+    "oxlint-tsgolint": "^0.10.1",
     "typescript": "^5.9.3"
   },
   "repositoryName": "MangaBox Extensions (0.9)"
