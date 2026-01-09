@@ -1,17 +1,17 @@
 import {
-  Chapter,
-  ChapterDetails,
+  type Chapter,
+  type ChapterDetails,
   ContentRating,
-  DiscoverSection,
-  DiscoverSectionItem,
+  type DiscoverSection,
+  type DiscoverSectionItem,
   DiscoverSectionType,
-  SearchQuery,
-  SearchResultItem,
-  SourceManga,
-  Tag,
-  TagSection,
+  type SearchQuery,
+  type SearchResultItem,
+  type SourceManga,
+  type Tag,
+  type TagSection,
 } from "@paperback/types";
-import { Cheerio, CheerioAPI } from "cheerio";
+import type { Cheerio, CheerioAPI } from "cheerio";
 import { Element } from "domhandler"; // Import Element from domhandler
 
 import { MangaboxGeneric } from "./Mangabox";
