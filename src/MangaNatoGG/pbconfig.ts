@@ -1,4 +1,4 @@
-import { ContentRating, SourceInfo, SourceIntents } from "@paperback/types";
+import { ContentRating, type SourceInfo, SourceIntents } from "@paperback/types";
 import { getVersion } from "../generic/MangaboxHelper";
 
 export default {
