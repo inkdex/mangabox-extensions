@@ -114,15 +114,24 @@ export abstract class MangaboxGeneric
   }
 
   async getChapters(sourceManga: SourceManga): Promise<Chapter[]> {
-    const [response, buffer] = await Application.scheduleRequest({
-      url: `${this.domain}/manga/${sourceManga.mangaId}`,
+    const mangaId = sourceManga.mangaId;
+    const apiUrl = `${this.domain}/api/manga/${mangaId}/chapters?limit=9000&offset=0`;
+
+    const [responseAPI, bufferAPI] = await Application.scheduleRequest({
+      url: apiUrl,
       method: "GET",
     });
-    await this.checkResponseError(response);
+    await this.checkResponseError(responseAPI);
 
-    const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
-
-    return this.parser.parseChapterList($, sourceManga, this);
+    const jsonString = Application.arrayBufferToUTF8String(bufferAPI);
+    let json;
+    try {
+      json = JSON.parse(jsonString);
+    } catch (e) {
+      console.error(`Failed to parse JSON for ${sourceManga.mangaId}`, e);
+      return [];
+    }
+    return this.parser.parseChapterList(json, sourceManga, this);
   }
 
   async getChapterDetails(chapter: Chapter): Promise<ChapterDetails> {
