@@ -76,9 +76,6 @@ export abstract class MangaboxGeneric
 
   requestManager: PaperbackInterceptor;
 
-  /**
-   *
-   */
   constructor(params: GenericParams) {
     this.name = params.name;
     this.domain = params.domain;
@@ -264,18 +261,15 @@ export abstract class MangaboxGeneric
   }
 
   async saveCloudflareBypassCookies(cookies: Cookie[]): Promise<void> {
-    // Clear all the cookies
     for (const cookie of cookies) {
       this.cookieStorageInterceptor.deleteCookie(cookie);
     }
 
-    // Set all the cookies
     for (const cookie of cookies) {
       this.cookieStorageInterceptor.setCookie(cookie);
     }
   }
 
-  // Utility
   constructSearchRequest(page: number, query: SearchQuery) {
     const urlBuilder = new URL(this.domain);
 
@@ -300,9 +294,9 @@ export abstract class MangaboxGeneric
 
   sanitizeQuery(query: string): string {
     return query
-      .replace(/'[^ ]*/g, "") // Remove apostrophes and the following characters up to a space
-      .replace(/\.+/g, "") // Remove all periods
-      .replace(/["']/g, "") // Remove quotes
+      .replace(/'[^ ]*/g, "")
+      .replace(/\.+/g, "")
+      .replace(/["']/g, "")
       .trim();
   }
 
