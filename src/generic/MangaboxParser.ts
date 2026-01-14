@@ -35,14 +35,19 @@ export class MangaboxParser {
       .map((title) => title.trim())
       .filter((title) => title.length > 0);
 
-    const authors = $('li:contains("Author(s)") a')
-      .map((_, el) => $(el).text().trim())
-      .get()
-      .join(", ");
+    const authors = $('.info-wrap > div:contains("Author(s):")')
+      .first()
+      .clone()
+      .children("p")
+      .remove()
+      .end()
+      .text()
+      .trim();
 
-    const synopsis: string = Application.decodeHTMLEntities(
-      $("#contentBox", context).first().text().trim(),
-    );
+    let synopsis = $("#contentBox", context).first().text();
+    synopsis = synopsis.replace(/You are reading.*bookmark\./i, "");
+    synopsis = synopsis.replace(/<[^>]*>?/gm, "");
+    synopsis = Application.decodeHTMLEntities(synopsis.replace(/\s{2,}/g, " ").trim());
 
     const shareUrl: string = `${source.domain}/manga/${mangaId}`;
 
@@ -85,7 +90,6 @@ export class MangaboxParser {
         secondaryTitles: secondaryTitles,
         thumbnailUrl: image,
         author: authors,
-        artist: authors,
         tagGroups: tagGroups,
         synopsis: synopsis,
         contentRating: contentRating,
