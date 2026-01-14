@@ -94,46 +94,32 @@ export class MangaboxParser {
     };
   }
 
-  parseChapterList($: CheerioAPI, sourceManga: SourceManga, source: MangaboxGeneric): Chapter[] {
+  parseChapterList(json: any, sourceManga: SourceManga, source: MangaboxGeneric): Chapter[] {
     const chapters: Chapter[] = [];
-    const nodeArray = $(".row", ".chapter-list").toArray();
-    let nodesProcessed = 0;
 
-    // For each available chapter..
-    for (const obj of nodeArray) {
-      const sortingIndex = nodeArray.length - nodesProcessed++;
-      const id = this.idCleaner($("a", obj).first().attr("href") ?? "");
+    if (json.success && json.data && Array.isArray(json.data.chapters)) {
+      const apiChapters = json.data.chapters;
 
-      const chapName = $("a", obj).first().text().trim() ?? "";
-      const chapNumRegex = id.match(
-        /(?:chapter|ch.*?)(\d+\.?\d?(?:[-_]\d+)?)|(\d+\.?\d?(?:[-_]\d+)?)$/,
-      );
-      let chapNum: string | number =
-        chapNumRegex && chapNumRegex[1]
-          ? chapNumRegex[1].replace(/[-_]/gm, ".")
-          : (chapNumRegex?.[2] ?? "0");
+      for (let i = 0; i < apiChapters.length; i++) {
+        const item = apiChapters[i];
 
-      // make sure the chapter number is a number and not NaN
-      chapNum = parseFloat(chapNum) ?? 0;
+        const id = item.chapter_slug;
+        const title = item.chapter_name;
+        const chapNum = Number(item.chapter_num) || 0;
+        const date = new Date(item.updated_at);
 
-      const mangaTime = this.parseDate($("span", obj).last().attr("title") ?? "");
-
-      if (!id || typeof id === "undefined" || id === "#") {
-        console.log(
-          `Could not parse out ID when getting chapters for mangaId:${sourceManga.mangaId} parsedId: ${id}`,
-        );
-        continue;
+        chapters.push({
+          sourceManga: sourceManga,
+          chapterId: id,
+          langCode: source.language,
+          chapNum: chapNum,
+          title: title,
+          publishDate: date,
+          sortingIndex: apiChapters.length - i,
+        });
       }
-
-      chapters.push({
-        sourceManga: sourceManga,
-        chapterId: id,
-        langCode: source.language,
-        chapNum: chapNum,
-        title: chapName ? Application.decodeHTMLEntities(chapName) : "",
-        publishDate: mangaTime,
-        sortingIndex: sortingIndex,
-      });
+    } else {
+      console.log(`Invalid JSON structure for manga ${sourceManga.mangaId}`);
     }
 
     return chapters;
