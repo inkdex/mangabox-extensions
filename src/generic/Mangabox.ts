@@ -4,7 +4,6 @@ import {
   type ChapterDetails,
   type ChapterProviding,
   type CloudflareBypassRequestProviding,
-  CloudflareError,
   ContentRating,
   type Cookie,
   CookieStorageInterceptor,
@@ -16,7 +15,6 @@ import {
   type MangaProviding,
   type PagedResults,
   PaperbackInterceptor,
-  type Response,
   type SearchFilter,
   type SearchQuery,
   type SearchResultItem,
@@ -74,6 +72,8 @@ export abstract class MangaboxGeneric
 
   parser: MangaboxParser;
 
+  bypassPage?: string;
+
   requestManager: PaperbackInterceptor;
 
   constructor(params: GenericParams) {
@@ -82,6 +82,7 @@ export abstract class MangaboxGeneric
     this.defaultContentRating = params.contentRating ?? ContentRating.EVERYONE;
     this.language = params.language ?? "🇬🇧";
     this.parser = params.parser ?? new MangaboxParser();
+    this.bypassPage = `${this.domain}/manga`;
     this.requestManager = params.requestManager ?? new MangaboxInterceptor("main", this);
   }
 
@@ -103,11 +104,10 @@ export abstract class MangaboxGeneric
   }
 
   async getMangaDetails(mangaId: string): Promise<SourceManga> {
-    const [response, buffer] = await Application.scheduleRequest({
+    const [_response, buffer] = await Application.scheduleRequest({
       url: `${this.domain}/manga/${mangaId}`,
       method: "GET",
     });
-    await this.checkResponseError(response);
 
     const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
     return this.parser.parseMangaDetails($, mangaId, this);
@@ -117,11 +117,10 @@ export abstract class MangaboxGeneric
     const mangaId = sourceManga.mangaId;
     const apiUrl = `${this.domain}/api/manga/${mangaId}/chapters?limit=9000&offset=0`;
 
-    const [responseAPI, bufferAPI] = await Application.scheduleRequest({
+    const [_responseAPI, bufferAPI] = await Application.scheduleRequest({
       url: apiUrl,
       method: "GET",
     });
-    await this.checkResponseError(responseAPI);
 
     const jsonString = Application.arrayBufferToUTF8String(bufferAPI);
     let json;
@@ -138,11 +137,10 @@ export abstract class MangaboxGeneric
     const mangaId = chapter.sourceManga.mangaId;
     const chapterId = chapter.chapterId;
 
-    const [response, buffer] = await Application.scheduleRequest({
+    const [_response, buffer] = await Application.scheduleRequest({
       url: `${this.domain}/manga/${mangaId}/${chapterId}`,
       method: "GET",
     });
-    await this.checkResponseError(response);
 
     const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
 
@@ -199,11 +197,10 @@ export abstract class MangaboxGeneric
         throw new Error("Invalid sectionId provided!");
     }
 
-    const [response, buffer] = await Application.scheduleRequest({
+    const [_response, buffer] = await Application.scheduleRequest({
       url: `${this.domain}/manga-list/${param}?page=${page}`,
       method: "GET",
     });
-    await this.checkResponseError(response);
 
     const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
 
@@ -218,11 +215,10 @@ export abstract class MangaboxGeneric
   }
 
   async getSearchFilters(): Promise<SearchFilter[]> {
-    const [response, buffer] = await Application.scheduleRequest({
+    const [_response, buffer] = await Application.scheduleRequest({
       url: `${this.domain}`,
       method: "GET",
     });
-    await this.checkResponseError(response);
 
     const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
 
@@ -254,9 +250,7 @@ export abstract class MangaboxGeneric
   ): Promise<PagedResults<SearchResultItem>> {
     const page = metadata?.page ?? 1;
 
-    const [response, buffer] = await this.constructSearchRequest(page, query);
-
-    await this.checkResponseError(response);
+    const [_response, buffer] = await this.constructSearchRequest(page, query);
 
     const $ = cheerio.load(Application.arrayBufferToUTF8String(buffer));
 
@@ -307,30 +301,5 @@ export abstract class MangaboxGeneric
       .replace(/\.+/g, "")
       .replace(/["']/g, "")
       .trim();
-  }
-
-  async checkResponseError(response: Response): Promise<void> {
-    const status = response.status;
-    switch (status) {
-      case 403:
-      case 503:
-        throw new CloudflareError(
-          {
-            url: response.url,
-            method: "GET",
-            headers: {
-              referer: `${this.domain}/`,
-              origin: `${this.domain}/`,
-              "user-agent": await Application.getDefaultUserAgent(),
-            },
-          },
-          "Cloudflare detected!\nPlease do the Cloudflare bypass to continue!",
-        );
-      case 404:
-        throw new Error(`The requested page ${response.url} was not found!`);
-
-      case 429:
-        throw new Error(`Too many requests for ${response.url}!`);
-    }
   }
 }

@@ -1,4 +1,9 @@
-import { PaperbackInterceptor, type Request, type Response } from "@paperback/types";
+import {
+  CloudflareError,
+  PaperbackInterceptor,
+  type Request,
+  type Response,
+} from "@paperback/types";
 import { MangaboxGeneric } from "./Mangabox";
 
 export class MangaboxInterceptor extends PaperbackInterceptor {
@@ -29,6 +34,26 @@ export class MangaboxInterceptor extends PaperbackInterceptor {
     response: Response,
     data: ArrayBuffer,
   ): Promise<ArrayBuffer> {
+    const cfMitigated = response.headers?.["cf-mitigated"];
+    if (cfMitigated === "challenge") {
+      throw new CloudflareError(
+        {
+          url: this.source.bypassPage ?? this.source.domain,
+          method: "GET",
+          headers: {
+            referer: `${this.source.domain}/`,
+            origin: `${this.source.domain}/`,
+            "user-agent": await Application.getDefaultUserAgent(),
+          },
+        },
+        "Cloudflare detected, bypass it to continue!",
+      );
+    }
+
+    if (response.status !== 200) {
+      throw new Error(`Request failed with status ${response.status}: ${request.url}`);
+    }
+
     return data;
   }
 }
