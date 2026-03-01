@@ -19,12 +19,17 @@
   "devDependencies": {
     "@paperback/toolchain": "^1.0.0-alpha.57",
     "@paperback/types": "^1.0.0-alpha.57",
-    "cheerio": "^1.2.0",
+    "cheerio": "1.1.2",
     "husky": "^9.1.7",
-    "oxfmt": "^0.27.0",
-    "oxlint": "^1.42.0",
-    "oxlint-tsgolint": "^0.11.0",
+    "oxfmt": "^0.35.0",
+    "oxlint": "^1.50.0",
+    "oxlint-tsgolint": "^0.15.0",
     "typescript": "^5.9.3"
+  },
+  "overrides": {
+    "cheerio": {
+      "entities": "6.0.1"
+    }
   },
   "repositoryName": "MangaBox Extensions (0.9)"
 }
