@@ -1,3 +1,4 @@
+import { BasicRateLimiter } from "@paperback/types";
 import { MangaboxGeneric } from "../generic/Mangabox";
 import pbconfig from "./pbconfig";
 
@@ -10,6 +11,11 @@ class MangaKakalotGGExtension extends MangaboxGeneric {
       name: pbconfig.name,
       contentRating: pbconfig.contentRating,
       language: pbconfig.language,
+      rateLimiter: new BasicRateLimiter("main", {
+        numberOfRequests: 1,
+        bufferInterval: 1,
+        ignoreImages: true,
+      }),
     });
   }
 }
