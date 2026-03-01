@@ -34,6 +34,7 @@ export interface GenericParams {
   language: string;
   parser?: MangaboxParser;
   requestManager?: PaperbackInterceptor;
+  rateLimiter?: BasicRateLimiter;
 }
 
 type Metadata = {
@@ -76,6 +77,8 @@ export abstract class MangaboxGeneric
 
   requestManager: PaperbackInterceptor;
 
+  rateLimiter: BasicRateLimiter;
+
   constructor(params: GenericParams) {
     this.name = params.name;
     this.domain = params.domain;
@@ -84,14 +87,14 @@ export abstract class MangaboxGeneric
     this.parser = params.parser ?? new MangaboxParser();
     this.bypassPage = `${this.domain}/manga`;
     this.requestManager = params.requestManager ?? new MangaboxInterceptor("main", this);
+    this.rateLimiter =
+      params.rateLimiter ??
+      new BasicRateLimiter("ratelimiter", {
+        numberOfRequests: 5,
+        bufferInterval: 2,
+        ignoreImages: true,
+      });
   }
-
-  // Ratelimit: Wait 2 sec after 5 requests
-  globalRateLimiter = new BasicRateLimiter("ratelimiter", {
-    numberOfRequests: 5,
-    bufferInterval: 2,
-    ignoreImages: true,
-  });
 
   cookieStorageInterceptor = new CookieStorageInterceptor({
     storage: "stateManager",
@@ -99,8 +102,8 @@ export abstract class MangaboxGeneric
 
   async initialise(): Promise<void> {
     this.cookieStorageInterceptor.registerInterceptor();
-    this.globalRateLimiter.registerInterceptor();
-    this.requestManager?.registerInterceptor();
+    this.rateLimiter.registerInterceptor();
+    this.requestManager.registerInterceptor();
   }
 
   async getMangaDetails(mangaId: string): Promise<SourceManga> {
