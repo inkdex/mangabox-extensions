@@ -1,4 +1,4 @@
-const BASE_VERSION = "1.0.0-alpha.6";
+const BASE_VERSION = "1.0.0-alpha.7";
 
 export function getVersion(
   options?:
