@@ -1,5 +1,5 @@
 {
-  "name": "mangabox-extensions",
+  "name": "MangaBox Extensions (0.9)",
   "private": true,
   "description": "Paperback extensions for websites which use the generic MangaBox theme. Maintained by Inkdex.",
   "type": "module",
@@ -17,19 +17,13 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@paperback/toolchain": "^1.0.0-alpha.64",
-    "@paperback/types": "^1.0.0-alpha.64",
-    "cheerio": "1.2.0",
+    "@paperback/toolchain": "^1.0.0-alpha.74",
+    "@paperback/types": "^1.0.0-alpha.74",
+    "cheerio": "^1.2.0",
     "husky": "^9.1.7",
     "oxfmt": "^0.46.0",
     "oxlint": "^1.61.0",
     "oxlint-tsgolint": "^0.21.1",
     "typescript": "^6.0.3"
-  },
-  "overrides": {
-    "cheerio": {
-      "entities": "6.0.1"
-    }
-  },
-  "repositoryName": "MangaBox Extensions (0.9)"
+  }
 }
