@@ -7,6 +7,7 @@ import {
   type Request,
   type Response,
 } from "@paperback/types";
+
 import { Mangabox } from "./main";
 
 export class MangaboxInterceptor extends PaperbackInterceptor {
