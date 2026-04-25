@@ -4,13 +4,13 @@ import {
   type Request,
   type Response,
 } from "@paperback/types";
-import { MangaboxGeneric } from "./Mangabox";
+import { Mangabox } from "./main";
 
 export class MangaboxInterceptor extends PaperbackInterceptor {
-  source: MangaboxGeneric;
+  source: Mangabox;
   promise: Promise<string> | undefined;
 
-  constructor(id: string, source: MangaboxGeneric) {
+  constructor(id: string, source: Mangabox) {
     super(id);
     this.source = source;
   }

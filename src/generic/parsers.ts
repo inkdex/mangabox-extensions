@@ -13,15 +13,10 @@ import {
 } from "@paperback/types";
 import type { Cheerio, CheerioAPI } from "cheerio";
 import { Element } from "domhandler"; // Import Element from domhandler
-
-import { MangaboxGeneric } from "./Mangabox";
+import { Mangabox } from "./main";
 
 export class MangaboxParser {
-  async parseMangaDetails(
-    $: CheerioAPI,
-    mangaId: string,
-    source: MangaboxGeneric,
-  ): Promise<SourceManga> {
+  async parseMangaDetails($: CheerioAPI, mangaId: string, source: Mangabox): Promise<SourceManga> {
     const context = "div.main-wrapper";
 
     const title = $("img", context).attr("alt")?.trim() ?? "";
@@ -98,7 +93,7 @@ export class MangaboxParser {
     };
   }
 
-  parseChapterList(json: any, sourceManga: SourceManga, source: MangaboxGeneric): Chapter[] {
+  parseChapterList(json: any, sourceManga: SourceManga, source: Mangabox): Chapter[] {
     const chapters: Chapter[] = [];
 
     if (json.success && json.data && Array.isArray(json.data.chapters)) {
@@ -132,7 +127,7 @@ export class MangaboxParser {
   async parseChapterDetails(
     $: CheerioAPI,
     chapter: Chapter,
-    source: MangaboxGeneric,
+    source: Mangabox,
   ): Promise<ChapterDetails> {
     const pages: string[] = [];
 
@@ -157,7 +152,7 @@ export class MangaboxParser {
   async parseDiscoverSections(
     $: CheerioAPI,
     section: DiscoverSection,
-    source: MangaboxGeneric,
+    source: Mangabox,
   ): Promise<DiscoverSectionItem[]> {
     const items: DiscoverSectionItem[] = [];
 
@@ -243,7 +238,7 @@ export class MangaboxParser {
 
   async parseSearchResults(
     $: CheerioAPI,
-    source: MangaboxGeneric,
+    source: Mangabox,
     query: SearchQuery,
   ): Promise<SearchResultItem[]> {
     const results: SearchResultItem[] = [];
@@ -297,10 +292,7 @@ export class MangaboxParser {
   }
 
   // Utils
-  async getImageSrc(
-    imageObj: Cheerio<Element> | undefined,
-    source: MangaboxGeneric,
-  ): Promise<string> {
+  async getImageSrc(imageObj: Cheerio<Element> | undefined, source: Mangabox): Promise<string> {
     let image: string | undefined;
     const sources = ["data-src", "data-lazy-src", "srcset", "src", "data-cfsrc"];
 

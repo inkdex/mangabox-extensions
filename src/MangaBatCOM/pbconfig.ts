@@ -1,5 +1,5 @@
 import { ContentRating, type ExtensionInfo, SourceIntents } from "@paperback/types";
-import { getVersion } from "../generic/MangaboxHelper";
+import { getVersion } from "../generic/utils";
 
 export default {
   name: "MangaBatCOM",

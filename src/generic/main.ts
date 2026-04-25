@@ -24,10 +24,10 @@ import {
   URL,
 } from "@paperback/types";
 import * as cheerio from "cheerio";
-import { MangaboxInterceptor } from "./MangaboxInterceptor";
-import { MangaboxParser } from "./MangaboxParser";
+import { MangaboxInterceptor } from "./network";
+import { MangaboxParser } from "./parsers";
 
-export interface GenericParams {
+export interface MangaboxParams {
   name: string;
   domain: string;
   contentRating: ContentRating;
@@ -42,15 +42,14 @@ type Metadata = {
   completed?: boolean;
 };
 
-export abstract class MangaboxGeneric
-  implements
-    Extension,
-    SearchResultsProviding,
-    MangaProviding,
-    ChapterProviding,
-    DiscoverSectionProviding,
-    CloudflareBypassRequestProviding
-{
+type MangaboxImplementation = Extension &
+  DiscoverSectionProviding &
+  SearchResultsProviding &
+  MangaProviding &
+  ChapterProviding &
+  CloudflareBypassRequestProviding;
+
+export abstract class Mangabox implements MangaboxImplementation {
   /**
    * The Madara URL of the website. Eg. https://webtoon.xyz
    */
@@ -79,7 +78,7 @@ export abstract class MangaboxGeneric
 
   rateLimiter: BasicRateLimiter;
 
-  constructor(params: GenericParams) {
+  constructor(params: MangaboxParams) {
     this.name = params.name;
     this.domain = params.domain;
     this.defaultContentRating = params.contentRating ?? ContentRating.EVERYONE;

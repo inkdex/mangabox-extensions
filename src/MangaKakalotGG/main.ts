@@ -1,10 +1,10 @@
 import { BasicRateLimiter } from "@paperback/types";
-import { MangaboxGeneric } from "../generic/Mangabox";
+import { Mangabox } from "../generic/main";
 import pbconfig from "./pbconfig";
 
 const DOMAIN: string = "https://www.mangakakalot.gg";
 
-class MangaKakalotGGExtension extends MangaboxGeneric {
+class MangaKakalotGGExtension extends Mangabox {
   constructor() {
     super({
       domain: DOMAIN,

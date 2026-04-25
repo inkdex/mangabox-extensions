@@ -1,9 +1,9 @@
-import { MangaboxGeneric } from "../generic/Mangabox";
+import { Mangabox } from "../generic/main";
 import pbconfig from "./pbconfig";
 
 const DOMAIN: string = "https://www.natomanga.com";
 
-class NatoMangaCOMExtension extends MangaboxGeneric {
+class NatoMangaCOMExtension extends Mangabox {
   constructor() {
     super({
       domain: DOMAIN,
