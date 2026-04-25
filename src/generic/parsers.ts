@@ -16,6 +16,7 @@ import {
 } from "@paperback/types";
 import type { Cheerio, CheerioAPI } from "cheerio";
 import { Element } from "domhandler"; // Import Element from domhandler
+
 import { Mangabox } from "./main";
 
 export class MangaboxParser {

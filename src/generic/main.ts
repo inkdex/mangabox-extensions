@@ -27,6 +27,7 @@ import {
   URL,
 } from "@paperback/types";
 import * as cheerio from "cheerio";
+
 import { MangaboxInterceptor } from "./network";
 import { MangaboxParser } from "./parsers";
 
