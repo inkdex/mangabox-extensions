@@ -14,6 +14,7 @@ import {
   type Tag,
   type TagSection,
 } from "@paperback/types";
+import { type SearchFilterValue } from "@paperback/types/lib/compat/0.8";
 import type { Cheerio, CheerioAPI } from "cheerio";
 import { Element } from "domhandler"; // Import Element from domhandler
 
@@ -243,7 +244,7 @@ export class MangaboxParser {
   async parseSearchResults(
     $: CheerioAPI,
     source: Mangabox,
-    query: SearchQuery,
+    query: SearchQuery<SearchFilterValue[]>,
   ): Promise<SearchResultItem[]> {
     const results: SearchResultItem[] = [];
 
