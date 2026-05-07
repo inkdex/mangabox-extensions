@@ -18,7 +18,6 @@ import {
   type MangaProviding,
   type PagedResults,
   PaperbackInterceptor,
-  type SearchFilter,
   type SearchQuery,
   type SearchResultItem,
   type SearchResultsProviding,
@@ -26,6 +25,11 @@ import {
   type TagSection,
   URL,
 } from "@paperback/types";
+import {
+  SearchFilterForm,
+  type SearchFilter,
+  type SearchFilterValue,
+} from "@paperback/types/lib/compat/0.8";
 import * as cheerio from "cheerio";
 
 import { MangaboxInterceptor } from "./network";
@@ -250,8 +254,13 @@ export abstract class Mangabox implements MangaboxImplementation {
     ];
   }
 
+  async getAdvancedSearchForm(query: SearchQuery<SearchFilterValue[]>) {
+    // TODO: Replace compat wrapper with proper search form implementation
+    return new SearchFilterForm(query.metadata, this.getSearchFilters());
+  }
+
   async getSearchResults(
-    query: SearchQuery,
+    query: SearchQuery<SearchFilterValue[]>,
     metadata: Metadata | undefined,
   ): Promise<PagedResults<SearchResultItem>> {
     const page = metadata?.page ?? 1;
@@ -279,10 +288,11 @@ export abstract class Mangabox implements MangaboxImplementation {
     }
   }
 
-  constructSearchRequest(page: number, query: SearchQuery) {
+  constructSearchRequest(page: number, query: SearchQuery<SearchFilterValue[]>) {
+    const filters = query.metadata ?? [];
     const urlBuilder = new URL(this.domain);
 
-    const genreFilters = Object.keys(query.filters.find((x) => x.id === "genres")?.value ?? {});
+    const genreFilters = Object.keys(filters.find((x) => x.id === "genres")?.value ?? {});
 
     if (query.title) {
       urlBuilder.addPathComponent("search");
