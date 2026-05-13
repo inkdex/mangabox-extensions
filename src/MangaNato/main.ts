@@ -4,9 +4,9 @@
 import { Mangabox } from "../generic/main";
 import pbconfig from "./pbconfig";
 
-const DOMAIN: string = "https://www.nelomanga.net";
+const DOMAIN: string = "https://www.manganato.gg";
 
-class NeloMangaNETExtension extends Mangabox {
+class MangaNatoExtension extends Mangabox {
   constructor() {
     super({
       domain: DOMAIN,
@@ -17,4 +17,4 @@ class NeloMangaNETExtension extends Mangabox {
   }
 }
 
-export const NeloMangaNET = new NeloMangaNETExtension();
+export const MangaNato = new MangaNatoExtension();

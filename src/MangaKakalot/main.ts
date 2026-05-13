@@ -8,7 +8,7 @@ import pbconfig from "./pbconfig";
 
 const DOMAIN: string = "https://www.mangakakalot.gg";
 
-class MangaKakalotGGExtension extends Mangabox {
+class MangaKakalotExtension extends Mangabox {
   constructor() {
     super({
       domain: DOMAIN,
@@ -24,4 +24,4 @@ class MangaKakalotGGExtension extends Mangabox {
   }
 }
 
-export const MangaKakalotGG = new MangaKakalotGGExtension();
+export const MangaKakalot = new MangaKakalotExtension();
