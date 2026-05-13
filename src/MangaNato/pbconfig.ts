@@ -5,7 +5,7 @@ import { basePbConfig } from "../generic/config";
 
 let pbConfig = basePbConfig;
 
-pbConfig.name = "MangaNatoGG";
+pbConfig.name = "MangaNato";
 pbConfig.description = "Extension that pulls content from manganato.gg.";
 pbConfig.developers = [{ name: "Saw_6" }];
 

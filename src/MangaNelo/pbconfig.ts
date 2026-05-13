@@ -5,8 +5,8 @@ import { basePbConfig } from "../generic/config";
 
 let pbConfig = basePbConfig;
 
-pbConfig.name = "MangaBatCOM";
-pbConfig.description = "Extension that pulls content from mangabat.com.";
+pbConfig.name = "MangaNelo";
+pbConfig.description = "Extension that pulls content from nelomanga.net.";
 pbConfig.developers = [{ name: "Saw_6" }];
 
 export default pbConfig;
