@@ -303,6 +303,10 @@ export abstract class Mangabox implements MangaboxImplementation {
       urlBuilder.addPathComponent("genre");
       urlBuilder.addPathComponent(genreFilters[0] ?? "");
       urlBuilder.setQueryItem("page", page.toString());
+    } else {
+      urlBuilder.addPathComponent("manga-list");
+      urlBuilder.addPathComponent("latest-manga");
+      urlBuilder.setQueryItem("page", page.toString());
     }
 
     return Application.scheduleRequest({
