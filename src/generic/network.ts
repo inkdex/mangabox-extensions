@@ -13,6 +13,7 @@ import { Mangabox } from "./main";
 export class MangaboxInterceptor extends PaperbackInterceptor {
   source: Mangabox;
   promise: Promise<string> | undefined;
+  private retryingUrls: Set<string> = new Set();
 
   constructor(id: string, source: Mangabox) {
     super(id);
@@ -52,6 +53,26 @@ export class MangaboxInterceptor extends PaperbackInterceptor {
         },
         "Cloudflare detected, bypass it to continue!",
       );
+    }
+
+    if (response.status === 429 && !this.retryingUrls.has(request.url)) {
+      const retryAfter = Number(response.headers?.["retry-after"]) || 10;
+      if (retryAfter > 30) {
+        throw new Error(
+          `Rate limited; server requested ${retryAfter}s backoff (too long to wait): ${request.url}`,
+        );
+      }
+      this.retryingUrls.add(request.url);
+      try {
+        console.log(
+          `[MangaboxInterceptor] 429, sleeping ${retryAfter}s before retry: ${request.url}`,
+        );
+        await Application.sleep(retryAfter);
+        const [, retriedData] = await Application.scheduleRequest(request);
+        return retriedData;
+      } finally {
+        this.retryingUrls.delete(request.url);
+      }
     }
 
     if (response.status !== 200) {
