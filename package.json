@@ -24,8 +24,8 @@
     "chai": "^6.2.2",
     "cheerio": "^1.2.0",
     "husky": "^9.1.7",
-    "oxfmt": "^0.50.0",
-    "oxlint": "^1.65.0",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
     "oxlint-tsgolint": "^0.23.0",
     "typescript": "^6.0.3"
   }
