@@ -1,0 +1,101 @@
+{
+  "buildTime": "2026-05-31T11:00:23.167Z",
+  "builtWith": {
+    "toolchain": "1.0.0-alpha.87",
+    "types": "1.0.0-alpha.87"
+  },
+  "repository": {
+    "name": "MangaBox Extensions (0.9)",
+    "description": "Paperback extensions for websites which use the generic MangaBox theme. Maintained by Inkdex."
+  },
+  "sources": [
+    {
+      "name": "MangaBat",
+      "description": "Extension that pulls content from mangabat.com.",
+      "version": "1.0.0-alpha.9",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        4,
+        32,
+        64,
+        16
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Saw_6"
+        }
+      ],
+      "id": "MangaBat"
+    },
+    {
+      "name": "MangaKakalot",
+      "description": "Extension that pulls content from mangakakalot.gg.",
+      "version": "1.0.0-alpha.9",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        4,
+        32,
+        64,
+        16
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Saw_6"
+        }
+      ],
+      "id": "MangaKakalot"
+    },
+    {
+      "name": "MangaNato",
+      "description": "Extension that pulls content from manganato.gg.",
+      "version": "1.0.0-alpha.9",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        4,
+        32,
+        64,
+        16
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Saw_6"
+        }
+      ],
+      "id": "MangaNato"
+    },
+    {
+      "name": "MangaNelo",
+      "description": "Extension that pulls content from nelomanga.net.",
+      "version": "1.0.0-alpha.9",
+      "icon": "icon.png",
+      "language": "en",
+      "contentRating": "SAFE",
+      "capabilities": [
+        1,
+        4,
+        32,
+        64,
+        16
+      ],
+      "badges": [],
+      "developers": [
+        {
+          "name": "Saw_6"
+        }
+      ],
+      "id": "MangaNelo"
+    }
+  ]
+}
