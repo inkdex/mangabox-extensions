@@ -8,7 +8,7 @@ import {
   type SourceDeveloper,
 } from "@paperback/types";
 
-const BASE_VERSION = "1.0.0-alpha.9";
+const BASE_VERSION = "1.0.0-alpha.10";
 
 export const basePbConfig = {
   name: "",
@@ -20,7 +20,6 @@ export const basePbConfig = {
   capabilities: [
     SourceIntents.CHAPTER_PROVIDING,
     SourceIntents.DISCOVER_SECTION_PROVIDING,
-    SourceIntents.SETTINGS_FORM_PROVIDING,
     SourceIntents.SEARCH_RESULT_PROVIDING,
     SourceIntents.CLOUDFLARE_BYPASS_PROVIDING,
   ],

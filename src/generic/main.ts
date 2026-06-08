@@ -5,22 +5,17 @@ import {
   BasicRateLimiter,
   type Chapter,
   type ChapterDetails,
-  type ChapterProviding,
-  type CloudflareBypassRequestProviding,
   ContentRating,
   type Cookie,
   CookieStorageInterceptor,
   type DiscoverSection,
   type DiscoverSectionItem,
-  type DiscoverSectionProviding,
+  type ExtensionImpl,
   DiscoverSectionType,
-  type Extension,
-  type MangaProviding,
   type PagedResults,
   PaperbackInterceptor,
   type SearchQuery,
   type SearchResultItem,
-  type SearchResultsProviding,
   type SourceManga,
   type TagSection,
   URL,
@@ -32,6 +27,7 @@ import {
 } from "@paperback/types/lib/compat/0.8";
 import * as cheerio from "cheerio";
 
+import { type basePbConfig } from "./config";
 import { MangaboxInterceptor } from "./network";
 import { MangaboxParser } from "./parsers";
 
@@ -43,6 +39,7 @@ export interface MangaboxParams {
   parser?: MangaboxParser;
   requestManager?: PaperbackInterceptor;
   rateLimiter?: BasicRateLimiter;
+  bypassPage?: string;
 }
 
 type Metadata = {
@@ -50,12 +47,7 @@ type Metadata = {
   completed?: boolean;
 };
 
-type MangaboxImplementation = Extension &
-  DiscoverSectionProviding &
-  SearchResultsProviding &
-  MangaProviding &
-  ChapterProviding &
-  CloudflareBypassRequestProviding;
+type MangaboxImplementation = ExtensionImpl<typeof basePbConfig>;
 
 export abstract class Mangabox implements MangaboxImplementation {
   /**
@@ -92,7 +84,7 @@ export abstract class Mangabox implements MangaboxImplementation {
     this.defaultContentRating = params.contentRating ?? ContentRating.EVERYONE;
     this.language = params.language ?? "🇬🇧";
     this.parser = params.parser ?? new MangaboxParser();
-    this.bypassPage = `${this.domain}/manga`;
+    this.bypassPage = params.bypassPage ?? `${this.domain}/manga`;
     this.requestManager = params.requestManager ?? new MangaboxInterceptor("main", this);
     this.rateLimiter =
       params.rateLimiter ??
