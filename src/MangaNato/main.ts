@@ -13,6 +13,7 @@ class MangaNatoExtension extends Mangabox {
       name: pbconfig.name,
       contentRating: pbconfig.contentRating,
       language: pbconfig.language,
+      bypassPage: `${DOMAIN}/search/story`,
     });
   }
 }
