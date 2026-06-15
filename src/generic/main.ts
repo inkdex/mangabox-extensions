@@ -89,8 +89,8 @@ export abstract class Mangabox implements MangaboxImplementation {
     this.rateLimiter =
       params.rateLimiter ??
       new BasicRateLimiter("ratelimiter", {
-        numberOfRequests: 5,
-        bufferInterval: 2,
+        numberOfRequests: 2,
+        bufferInterval: 8,
         ignoreImages: true,
       });
   }
