@@ -1,5 +1,5 @@
 {
-  "buildTime": "2026-06-09T00:12:46.542Z",
+  "buildTime": "2026-06-15T09:57:36.359Z",
   "builtWith": {
     "toolchain": "1.0.0-alpha.87",
     "types": "1.0.0-alpha.87"
@@ -12,7 +12,7 @@
     {
       "name": "MangaBat",
       "description": "Extension that pulls content from mangabat.com.",
-      "version": "1.0.0-alpha.10",
+      "version": "1.0.0-alpha.11",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -33,7 +33,7 @@
     {
       "name": "MangaKakalot",
       "description": "Extension that pulls content from mangakakalot.gg.",
-      "version": "1.0.0-alpha.10",
+      "version": "1.0.0-alpha.11",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -54,7 +54,7 @@
     {
       "name": "MangaNato",
       "description": "Extension that pulls content from manganato.gg.",
-      "version": "1.0.0-alpha.10",
+      "version": "1.0.0-alpha.11",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
@@ -75,7 +75,7 @@
     {
       "name": "MangaNelo",
       "description": "Extension that pulls content from nelomanga.net.",
-      "version": "1.0.0-alpha.10",
+      "version": "1.0.0-alpha.11",
       "icon": "icon.png",
       "language": "en",
       "contentRating": "SAFE",
