@@ -1,8 +1,8 @@
 {
-  "buildTime": "2026-06-15T17:42:42.839Z",
+  "buildTime": "2026-06-16T12:25:31.942Z",
   "builtWith": {
-    "toolchain": "1.0.0-alpha.87",
-    "types": "1.0.0-alpha.87"
+    "toolchain": "1.0.0-alpha.92",
+    "types": "1.0.0-alpha.92"
   },
   "repository": {
     "name": "MangaBox Extensions (0.9)",
